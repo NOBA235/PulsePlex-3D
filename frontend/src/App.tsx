@@ -98,6 +98,22 @@ const INITIAL_PREDICTION: PredictResponse = {
       color: '#ef4444',
       stenotic: true,
       anatomical_territory: 'Anterior Wall & Interventricular Septum (Apex)',
+      plaque_metrics: {
+        reference_diameter_mm: 3.6,
+        minimal_lumen_diameter_mm: 0.91,
+        reference_area_mm2: 10.18,
+        minimal_lumen_area_mm2: 0.65,
+        area_stenosis_percentage: 93.6,
+        lesion_length_mm: 22.1,
+        plaque_volume_mm3: 157.9,
+        calcified_percentage: 42.0,
+        soft_lipid_percentage: 36.0,
+        fibrous_percentage: 22.0,
+        calcified_hu: 1040,
+        soft_lipid_hu: 48,
+        is_vulnerable_plaque: true,
+        hemodynamic_ffr_estimate: 0.49,
+      },
     },
     LCX: {
       vessel: 'LCX',
@@ -108,6 +124,22 @@ const INITIAL_PREDICTION: PredictResponse = {
       color: '#eab308',
       stenotic: false,
       anatomical_territory: 'Lateral and Posterior Ventricular Wall',
+      plaque_metrics: {
+        reference_diameter_mm: 3.2,
+        minimal_lumen_diameter_mm: 2.06,
+        reference_area_mm2: 8.04,
+        minimal_lumen_area_mm2: 3.33,
+        area_stenosis_percentage: 58.6,
+        lesion_length_mm: 14.7,
+        plaque_volume_mm3: 51.9,
+        calcified_percentage: 25.0,
+        soft_lipid_percentage: 25.0,
+        fibrous_percentage: 50.0,
+        calcified_hu: 920,
+        soft_lipid_hu: 42,
+        is_vulnerable_plaque: false,
+        hemodynamic_ffr_estimate: 0.76,
+      },
     },
     RCA: {
       vessel: 'RCA',
@@ -118,10 +150,33 @@ const INITIAL_PREDICTION: PredictResponse = {
       color: '#ef4444',
       stenotic: true,
       anatomical_territory: 'Inferior Wall, Right Ventricle & Sinoatrial Node',
+      plaque_metrics: {
+        reference_diameter_mm: 3.8,
+        minimal_lumen_diameter_mm: 1.70,
+        reference_area_mm2: 11.34,
+        minimal_lumen_area_mm2: 2.27,
+        area_stenosis_percentage: 80.0,
+        lesion_length_mm: 18.4,
+        plaque_volume_mm3: 125.2,
+        calcified_percentage: 38.0,
+        soft_lipid_percentage: 32.0,
+        fibrous_percentage: 30.0,
+        calcified_hu: 995,
+        soft_lipid_hu: 44,
+        is_vulnerable_plaque: true,
+        hemodynamic_ffr_estimate: 0.62,
+      },
     },
   },
   stenotic_vessels_count: 2,
   vascular_pattern: 'Double-Vessel Disease (LAD + RCA)',
+  cad_rads: {
+    grade: 'CAD-RADS 4A/V',
+    max_stenosis_percentage: 88.0,
+    description: 'Severe 1-2 Vessel CAD (70-99% Stenosis) with High-Risk Vulnerable Plaque Features (V)',
+    clinical_recommendation: 'Cardiology consultation; recommend invasive coronary angiography (ICA) and revascularization.',
+  },
+  total_plaque_volume_mm3: 335.0,
   shap_explanations: {},
   patient_summary: {
     age: 54,
@@ -130,6 +185,7 @@ const INITIAL_PREDICTION: PredictResponse = {
     ef_tte: 45,
     st_depression: true,
     bp: 135,
+    pr: 78,
   },
 };
 
@@ -278,13 +334,20 @@ export const App: React.FC = () => {
           {/* Right Column: 3D Visualization + Clinical Dashboard (7 cols) */}
           <div className="lg:col-span-7 xl:col-span-8 space-y-6">
             {/* 3D Heart Scene */}
-            <div className="w-full h-[470px]">
+            <div className="w-full h-[520px]">
               <Canvas3D
                 vessels={prediction.vessels}
                 selectedVessel={selectedVessel}
                 onSelectVessel={setSelectedVessel}
                 isBeating={isBeating}
                 onToggleBeating={() => setIsBeating(!isBeating)}
+                patientVitals={{
+                  pr: patient.PR,
+                  bp: patient.BP,
+                  st_depression: Boolean(patient['St Depression']),
+                  st_elevation: Boolean(patient['St Elevation']),
+                }}
+                cadRads={prediction.cad_rads}
               />
             </div>
 

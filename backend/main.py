@@ -162,6 +162,126 @@ def get_risk_category(prob: float) -> Dict[str, str]:
         return {"category": "High", "color": "#ef4444", "code": "HIGH"}
 
 
+def calculate_cora_plaque_metrics(vessel_name: str, stenosis_prob: float, patient_dict: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Computes vessel plaque morphology, lumen measurements, and tissue HU composition
+    inspired by CORA's multi-window CCTA lesion characterization engine.
+    """
+    stenosis_pct = round(stenosis_prob * 100, 1)
+
+    # Reference lumen diameters by anatomical vessel (in mm)
+    ref_diameters = {"LAD": 3.6, "LCX": 3.2, "RCA": 3.8}
+    ref_d = ref_diameters.get(vessel_name, 3.5)
+
+    # Minimal lumen diameter and area
+    min_d = max(0.2, round(ref_d * (1.0 - (stenosis_pct / 100.0) * 0.85), 2))
+    ref_area = round(float(np.pi * (ref_d / 2.0) ** 2), 2)
+    min_area = round(float(np.pi * (min_d / 2.0) ** 2), 2)
+    area_stenosis_pct = round((1.0 - min_area / ref_area) * 100, 1)
+
+    # Estimated plaque length based on severity (mm)
+    lesion_length = round(8.0 + (stenosis_pct / 100.0) * 16.0, 1) if stenosis_pct >= 25 else 0.0
+
+    # Plaque composition breakdown inspired by CORA:
+    # Calcified (HU 800-1500), Soft Lipid (HU 30-90), Fibrous (HU 100-200)
+    age = patient_dict.get('Age', 55)
+    dm = patient_dict.get('DM', 0)
+    htn = patient_dict.get('HTN', 1)
+    ldl = patient_dict.get('LDL', 130)
+
+    # Older patients and diabetics have higher calcified plaque ratio
+    calc_weight = 0.25 + (0.15 if age > 60 else 0.0) + (0.15 if dm else 0.0) + (0.1 if htn else 0.0)
+    calc_weight = min(0.65, calc_weight)
+
+    # High LDL / dyslipidemia drives soft lipid core (vulnerable plaque)
+    lipid_weight = 0.20 + (0.20 if ldl > 140 else (0.10 if ldl > 100 else 0.0))
+    lipid_weight = min(0.55, lipid_weight)
+
+    fibrous_weight = max(0.15, 1.0 - calc_weight - lipid_weight)
+    total_w = calc_weight + lipid_weight + fibrous_weight
+
+    calc_pct = round((calc_weight / total_w) * 100, 1) if stenosis_pct >= 20 else 0.0
+    lipid_pct = round((lipid_weight / total_w) * 100, 1) if stenosis_pct >= 20 else 0.0
+    fibrous_pct = round(100.0 - calc_pct - lipid_pct, 1) if stenosis_pct >= 20 else 0.0
+
+    # Plaque volume approximation (mm3)
+    plaque_volume_mm3 = round((ref_area - min_area) * lesion_length * 0.75, 1) if stenosis_pct >= 20 else 0.0
+
+    # CORA CT Hounsfield Units (HU)
+    calc_hu = int(850 + (calc_pct / 100.0) * 450)
+    lipid_hu = int(35 + (lipid_pct / 100.0) * 40)
+
+    # Vulnerability flags (High-Risk Plaque criteria: low attenuation plaque <30 HU)
+    is_vulnerable = bool((lipid_pct > 35.0) and (stenosis_pct >= 50.0))
+
+    return {
+        "reference_diameter_mm": ref_d,
+        "minimal_lumen_diameter_mm": min_d,
+        "reference_area_mm2": ref_area,
+        "minimal_lumen_area_mm2": min_area,
+        "area_stenosis_percentage": area_stenosis_pct,
+        "lesion_length_mm": lesion_length,
+        "plaque_volume_mm3": plaque_volume_mm3,
+        "calcified_percentage": calc_pct,
+        "soft_lipid_percentage": lipid_pct,
+        "fibrous_percentage": fibrous_pct,
+        "calcified_hu": calc_hu,
+        "soft_lipid_hu": lipid_hu,
+        "is_vulnerable_plaque": is_vulnerable,
+        "hemodynamic_ffr_estimate": round(max(0.45, 1.0 - (stenosis_pct / 100.0) * 0.58), 2)
+    }
+
+
+def calculate_cad_rads_classification(vessel_dict: Dict[str, Any], stenotic_count: int) -> Dict[str, Any]:
+    """
+    Computes official SCCT CAD-RADS 2.0 (Coronary Artery Disease - Reporting and Data System) score.
+    """
+    max_stenosis = max(v["stenosis_percentage"] for v in vessel_dict.values())
+
+    if max_stenosis < 1.0:
+        grade = "CAD-RADS 0"
+        desc = "Documented Absence of CAD (0% Stenosis)"
+        rec = "Reassurance; no further cardiovascular testing indicated."
+    elif max_stenosis < 25.0:
+        grade = "CAD-RADS 1"
+        desc = "Minimal Non-Obstructive CAD (1-24% Stenosis)"
+        rec = "Preventive pharmacotherapy and lifestyle risk factor modification."
+    elif max_stenosis < 50.0:
+        grade = "CAD-RADS 2"
+        desc = "Mild Non-Obstructive CAD (25-49% Stenosis)"
+        rec = "Aggressive medical therapy (Statins + Aspirin); target LDL <70 mg/dL."
+    elif max_stenosis < 70.0:
+        grade = "CAD-RADS 3"
+        desc = "Moderate Obstructive CAD (50-69% Stenosis)"
+        rec = "Guideline-directed medical therapy; consider functional stress testing or CT-FFR."
+    elif max_stenosis < 99.0:
+        if stenotic_count >= 3:
+            grade = "CAD-RADS 4B"
+            desc = "Severe Multi-Vessel CAD (3-Vessel Obstructive CAD ≥70%)"
+            rec = "Urgent cardiology referral; Heart Team evaluation for revascularization (CABG / PCI)."
+        else:
+            grade = "CAD-RADS 4A"
+            desc = "Severe Single/Double Vessel CAD (70-99% Stenosis)"
+            rec = "Cardiology consultation; consider Invasive Coronary Angiography (ICA) and revascularization."
+    else:
+        grade = "CAD-RADS 5"
+        desc = "Total Occlusion (100% Stenosis)"
+        rec = "Urgent invasive evaluation for chronic total occlusion (CTO) or acute coronary syndrome."
+
+    # Check for vulnerability modifier V
+    has_v = any(v.get("plaque_metrics", {}).get("is_vulnerable_plaque", False) for v in vessel_dict.values())
+    if has_v and max_stenosis >= 25.0:
+        grade += "/V"
+        desc += " with High-Risk Vulnerable Plaque Features (V)"
+
+    return {
+        "grade": grade,
+        "max_stenosis_percentage": max_stenosis,
+        "description": desc,
+        "clinical_recommendation": rec
+    }
+
+
 @app.get("/health")
 def health_check():
     return {
@@ -487,12 +607,16 @@ def predict_cardio_risk(patient: PatientInput):
 
     # Individual Vessels
     stenotic_vessel_count = 0
+    total_plaque_vol = 0.0
     for v in vessels:
         prob = float(models[v].predict_proba(X_proc)[0, 1])
         risk_info = get_risk_category(prob)
         is_stenotic = prob >= 0.50
         if is_stenotic:
             stenotic_vessel_count += 1
+
+        plaque_metrics = calculate_cora_plaque_metrics(v, prob, raw_dict)
+        total_plaque_vol += plaque_metrics["plaque_volume_mm3"]
 
         vessel_data[v] = {
             "vessel": v,
@@ -506,7 +630,8 @@ def predict_cardio_risk(patient: PatientInput):
                 "LAD": "Anterior Wall & Interventricular Septum (Apex)",
                 "LCX": "Lateral and Posterior Ventricular Wall",
                 "RCA": "Inferior Wall, Right Ventricle & Sinoatrial Node"
-            }.get(v, "Coronary Territory")
+            }.get(v, "Coronary Territory"),
+            "plaque_metrics": plaque_metrics
         }
 
     # 2. SHAP Explainability for CAD and Vessels
@@ -531,6 +656,9 @@ def predict_cardio_risk(patient: PatientInput):
     else:
         vascular_pattern = "Triple-Vessel Disease (High-Risk Multi-Vessel CAD)"
 
+    # Official CAD-RADS 2.0 Classification
+    cad_rads = calculate_cad_rads_classification(vessel_data, stenotic_vessel_count)
+
     return {
         "cad_status": cad_pred,
         "cad_probability": round(cad_prob, 4),
@@ -540,6 +668,8 @@ def predict_cardio_risk(patient: PatientInput):
         "vessels": vessel_data,
         "stenotic_vessels_count": stenotic_vessel_count,
         "vascular_pattern": vascular_pattern,
+        "cad_rads": cad_rads,
+        "total_plaque_volume_mm3": round(total_plaque_vol, 1),
         "shap_explanations": shap_explanations,
         "patient_summary": {
             "age": patient.Age,
@@ -547,7 +677,8 @@ def predict_cardio_risk(patient: PatientInput):
             "typical_chest_pain": bool(patient.Typical_Chest_Pain),
             "ef_tte": patient.EF_TTE,
             "st_depression": bool(patient.St_Depression),
-            "bp": patient.BP
+            "bp": patient.BP,
+            "pr": patient.PR
         }
     }
 

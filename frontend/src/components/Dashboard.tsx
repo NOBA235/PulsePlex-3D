@@ -25,6 +25,9 @@ import {
   Award,
   ShieldAlert,
   ChevronRight,
+  FileText,
+  ShieldCheck,
+  Sparkles,
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -159,12 +162,63 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
               <div className="text-[10px] text-slate-400 truncate flex items-center justify-between">
                 <span>{v.anatomical_territory.split(' ')[0]} territory</span>
+                {v.plaque_metrics && (
+                  <span className="font-mono text-cyan-400 text-[10px]">
+                    MLA {v.plaque_metrics.minimal_lumen_area_mm2} mm²
+                  </span>
+                )}
                 <ChevronRight className="w-3 h-3 text-slate-500" />
               </div>
             </div>
           );
         })}
       </div>
+
+      {/* ================= CAD-RADS 2.0 & CORA PLAQUE BURDEN CONSENSUS ================= */}
+      {prediction.cad_rads && (
+        <div className="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-indigo-900/50 rounded-2xl p-4 shadow-xl">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="flex items-start space-x-3">
+              <div className="p-2 rounded-xl bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 shrink-0 mt-0.5">
+                <FileText className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-bold text-white tracking-wide">
+                    SCCT CAD-RADS™ 2.0 Classification
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-mono font-bold text-xs">
+                    {prediction.cad_rads.grade}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300 font-medium mt-0.5">
+                  {prediction.cad_rads.description}
+                </p>
+                <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                  <strong className="text-slate-300">Guideline Action:</strong>{' '}
+                  {prediction.cad_rads.clinical_recommendation}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-3 shrink-0 self-start md:self-center bg-slate-950/60 p-2.5 rounded-xl border border-slate-800 text-xs">
+              <div>
+                <span className="text-[10px] text-slate-400 block">Total Atheroma Vol</span>
+                <span className="font-mono font-bold text-white text-sm">
+                  {prediction.total_plaque_volume_mm3 || 0} <span className="text-[10px] text-slate-400">mm³</span>
+                </span>
+              </div>
+              <div className="h-6 w-px bg-slate-800"></div>
+              <div>
+                <span className="text-[10px] text-slate-400 block">Peak Stenosis</span>
+                <span className="font-mono font-bold text-rose-400 text-sm">
+                  {prediction.cad_rads.max_stenosis_percentage}%
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ================= SECTION 2: SHAP EXPLAINABILITY PANEL ================= */}
       <div className="bg-[#111827] border border-slate-800 rounded-2xl p-5 shadow-xl">

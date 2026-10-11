@@ -60,6 +60,30 @@ export interface PatientFeatures {
   VHD: string;
 }
 
+export interface PlaqueMetrics {
+  reference_diameter_mm: number;
+  minimal_lumen_diameter_mm: number;
+  reference_area_mm2: number;
+  minimal_lumen_area_mm2: number;
+  area_stenosis_percentage: number;
+  lesion_length_mm: number;
+  plaque_volume_mm3: number;
+  calcified_percentage: number;
+  soft_lipid_percentage: number;
+  fibrous_percentage: number;
+  calcified_hu: number;
+  soft_lipid_hu: number;
+  is_vulnerable_plaque: boolean;
+  hemodynamic_ffr_estimate: number;
+}
+
+export interface CadRadsClassification {
+  grade: string;
+  max_stenosis_percentage: number;
+  description: string;
+  clinical_recommendation: string;
+}
+
 export interface VesselRiskInfo {
   vessel: 'LAD' | 'LCX' | 'RCA';
   probability: number;
@@ -69,6 +93,7 @@ export interface VesselRiskInfo {
   color: string;
   stenotic: boolean;
   anatomical_territory: string;
+  plaque_metrics?: PlaqueMetrics;
 }
 
 export interface ShapFeature {
@@ -103,6 +128,8 @@ export interface PredictResponse {
   };
   stenotic_vessels_count: number;
   vascular_pattern: string;
+  cad_rads?: CadRadsClassification;
+  total_plaque_volume_mm3?: number;
   shap_explanations: {
     CAD?: ShapExplanation;
     LAD?: ShapExplanation;
@@ -116,6 +143,7 @@ export interface PredictResponse {
     ef_tte: number;
     st_depression: boolean;
     bp: number;
+    pr?: number;
   };
 }
 
