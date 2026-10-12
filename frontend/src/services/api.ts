@@ -1,5 +1,5 @@
 /**
- * API Service for interacting with FastAPI CardioRisk Backend
+ * API Service for interacting with FastAPI PulsePlex Backend
  */
 
 export interface PatientFeatures {

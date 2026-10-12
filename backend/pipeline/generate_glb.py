@@ -62,7 +62,7 @@ def generate_heart_glb(output_path: str):
 
     # GLTF JSON structure
     gltf = {
-        "asset": {"version": "2.0", "generator": "CardioRiskAI GLB Generator"},
+        "asset": {"version": "2.0", "generator": "PulsePlex GLB Generator"},
         "scenes": [{"nodes": [0]}],
         "nodes": [{"mesh": 0, "name": "HeartAnatomy"}],
         "meshes": [{

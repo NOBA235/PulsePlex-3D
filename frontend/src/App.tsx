@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Canvas3D } from './components/Canvas3D';
 import { Dashboard } from './components/Dashboard';
 import { InputForm } from './components/InputForm';
+import { InterventionSimulator } from './components/InterventionSimulator';
+import { ClinicalReportModal } from './components/ClinicalReportModal';
 import {
   PatientFeatures,
   PredictResponse,
@@ -21,6 +23,8 @@ import {
   AlertCircle,
   Stethoscope,
   Info,
+  FileText,
+  Sparkles,
 } from 'lucide-react';
 
 const DEFAULT_PATIENT: PatientFeatures = {
@@ -192,6 +196,8 @@ const INITIAL_PREDICTION: PredictResponse = {
 export const App: React.FC = () => {
   const [patient, setPatient] = useState<PatientFeatures>(DEFAULT_PATIENT);
   const [prediction, setPrediction] = useState<PredictResponse>(INITIAL_PREDICTION);
+  const [counterfactualPreview, setCounterfactualPreview] = useState<PredictResponse | null>(null);
+  const [showReportModal, setShowReportModal] = useState<boolean>(false);
   const [metrics, setMetrics] = useState<MetricsMap | null>(null);
   const [samplePatients, setSamplePatients] = useState<SamplePatient[]>([]);
   const [selectedVessel, setSelectedVessel] = useState<'LAD' | 'LCX' | 'RCA' | null>(null);
@@ -263,13 +269,13 @@ export const App: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h1 className="text-lg font-semibold text-slate-900 tracking-tight">Cardiovascular Risk Analysis</h1>
+                <h1 className="text-lg font-semibold text-slate-900 tracking-tight">PulsePlex</h1>
                 <span className="research-kicker text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border border-slate-200 text-slate-500">
                   Research interface
                 </span>
               </div>
               <p className="text-xs text-slate-500">
-                Coronary artery assessment · Z-Alizadeh Sani dataset
+                Cardiovascular risk & coronary artery assessment · Z-Alizadeh Sani dataset
               </p>
             </div>
           </div>
@@ -288,6 +294,16 @@ export const App: React.FC = () => {
                 </>
               )}
             </div>
+
+            <button
+              type="button"
+              onClick={() => setShowReportModal(true)}
+              className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition flex items-center space-x-1.5 shadow-sm"
+              title="Open Clinical Consultation Report"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>Clinical EHR Report</span>
+            </button>
 
             <a
               href="https://archive.ics.uci.edu/dataset/411/extension+of+z+alizadeh+sani+dataset"
@@ -336,7 +352,7 @@ export const App: React.FC = () => {
             {/* 3D Heart Scene */}
             <div className="w-full h-[520px]">
               <Canvas3D
-                vessels={prediction.vessels}
+                vessels={(counterfactualPreview || prediction).vessels}
                 selectedVessel={selectedVessel}
                 onSelectVessel={setSelectedVessel}
                 isBeating={isBeating}
@@ -346,14 +362,29 @@ export const App: React.FC = () => {
                   bp: patient.BP,
                   st_depression: Boolean(patient['St Depression']),
                   st_elevation: Boolean(patient['St Elevation']),
+                  t_inversion: Boolean(patient.Tinversion),
+                  q_wave: Boolean(patient['Q Wave']),
                 }}
-                cadRads={prediction.cad_rads}
+                cadRads={(counterfactualPreview || prediction).cad_rads}
               />
             </div>
 
+            {/* What-If Counterfactual Intervention Simulator */}
+            <InterventionSimulator
+              currentPatient={patient}
+              baselinePrediction={prediction}
+              onApplyInterventionsToPatient={(updatedPatient) => {
+                setPatient(updatedPatient);
+                runPrediction(updatedPatient);
+                setCounterfactualPreview(null);
+              }}
+              onPreviewCounterfactual3D={(preview) => setCounterfactualPreview(preview)}
+              is3DPreviewActive={Boolean(counterfactualPreview)}
+            />
+
             {/* Clinical Analytics & SHAP Dashboard */}
             <Dashboard
-              prediction={prediction}
+              prediction={counterfactualPreview || prediction}
               metrics={metrics}
               selectedVessel={selectedVessel}
               onSelectVessel={setSelectedVessel}
@@ -361,6 +392,15 @@ export const App: React.FC = () => {
           </div>
         </div>
       </main>
+
+      {/* ================= CLINICAL CONSULTATION REPORT MODAL ================= */}
+      {showReportModal && (
+        <ClinicalReportModal
+          patient={patient}
+          prediction={counterfactualPreview || prediction}
+          onClose={() => setShowReportModal(false)}
+        />
+      )}
 
       {/* ================= MANDATORY REGULATORY & SAFETY DISCLAIMER FOOTER ================= */}
       <footer className="research-footer fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 px-4 py-2.5">

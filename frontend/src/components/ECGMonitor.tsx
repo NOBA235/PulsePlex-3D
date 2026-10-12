@@ -6,6 +6,8 @@ interface ECGMonitorProps {
   isBeating?: boolean;
   hasStDepression?: boolean;
   hasStElevation?: boolean;
+  hasTinversion?: boolean;
+  hasQWave?: boolean;
 }
 
 export const ECGMonitor: React.FC<ECGMonitorProps> = ({
@@ -13,6 +15,8 @@ export const ECGMonitor: React.FC<ECGMonitorProps> = ({
   isBeating = true,
   hasStDepression = false,
   hasStElevation = false,
+  hasTinversion = false,
+  hasQWave = false,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animRef = useRef<number | null>(null);
@@ -71,7 +75,7 @@ export const ECGMonitor: React.FC<ECGMonitorProps> = ({
       // Q wave (0.30 - 0.33)
       else if (t >= 0.30 && t < 0.33) {
         const qt = (t - 0.30) / 0.03;
-        yOffset = Math.sin(qt * Math.PI) * 5; // downward
+        yOffset = Math.sin(qt * Math.PI) * (hasQWave ? 12 : 5); // deeper pathological Q wave
       }
       // R peak (0.33 - 0.38)
       else if (t >= 0.33 && t < 0.38) {
@@ -86,9 +90,9 @@ export const ECGMonitor: React.FC<ECGMonitorProps> = ({
       // ST segment (0.42 - 0.54)
       else if (t >= 0.42 && t < 0.54) {
         if (hasStDepression) {
-          yOffset = 4.5; // ST depression
+          yOffset = 5.5; // ST depression
         } else if (hasStElevation) {
-          yOffset = -6; // ST elevation
+          yOffset = -7.5; // ST elevation
         } else {
           yOffset = 0;
         }
@@ -96,7 +100,13 @@ export const ECGMonitor: React.FC<ECGMonitorProps> = ({
       // T wave (0.54 - 0.74)
       else if (t >= 0.54 && t < 0.74) {
         const tt = (t - 0.54) / 0.20;
-        yOffset = -Math.sin(tt * Math.PI) * (hasStDepression ? 4 : 11);
+        if (hasTinversion) {
+          yOffset = Math.sin(tt * Math.PI) * 7.5; // inverted T wave
+        } else if (hasStDepression) {
+          yOffset = -Math.sin(tt * Math.PI) * 4;
+        } else {
+          yOffset = -Math.sin(tt * Math.PI) * 11;
+        }
       } else {
         yOffset = 0;
       }
@@ -170,7 +180,7 @@ export const ECGMonitor: React.FC<ECGMonitorProps> = ({
     return () => {
       if (animRef.current) cancelAnimationFrame(animRef.current);
     };
-  }, [bpm, isBeating, hasStDepression, hasStElevation]);
+  }, [bpm, isBeating, hasStDepression, hasStElevation, hasTinversion, hasQWave]);
 
   return (
     <div className="flex items-center space-x-2 bg-slate-950/85 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-800 shadow-xl pointer-events-auto">
@@ -193,6 +203,16 @@ export const ECGMonitor: React.FC<ECGMonitorProps> = ({
       {hasStElevation && (
         <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-rose-600/30 text-rose-300 border border-rose-500">
           STEMI
+        </span>
+      )}
+      {hasTinversion && (
+        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/30">
+          T-Inv
+        </span>
+      )}
+      {hasQWave && (
+        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/30">
+          Path Q
         </span>
       )}
     </div>

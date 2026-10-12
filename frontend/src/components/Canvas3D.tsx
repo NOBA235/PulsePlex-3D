@@ -31,6 +31,8 @@ interface Canvas3DProps {
     bp?: number;
     st_depression?: boolean;
     st_elevation?: boolean;
+    t_inversion?: boolean;
+    q_wave?: boolean;
   };
   cadRads?: CadRadsClassification;
 }
@@ -47,6 +49,11 @@ export const Canvas3D: React.FC<Canvas3DProps> = ({
   const controlsRef = useRef<OrbitControlsImpl>(null);
   const [viewMode, setViewMode] = useState<CTViewMode>('anatomical');
   const [inspectModalVessel, setInspectModalVessel] = useState<'LAD' | 'LCX' | 'RCA' | null>(null);
+  const [stentedVessels, setStentedVessels] = useState<Record<'LAD' | 'LCX' | 'RCA', boolean>>({
+    LAD: false,
+    LCX: false,
+    RCA: false,
+  });
 
   // Anatomical camera angle presets
   const setCameraView = (view: 'anterior' | 'lateral' | 'inferior' | 'reset') => {
@@ -200,6 +207,7 @@ export const Canvas3D: React.FC<Canvas3DProps> = ({
               isBeating={isBeating}
               viewMode={viewMode}
               onInspectLesion={handleOpenInspector}
+              stentedVessels={stentedVessels}
             />
           </Center>
 
@@ -223,6 +231,8 @@ export const Canvas3D: React.FC<Canvas3DProps> = ({
           isBeating={isBeating}
           hasStDepression={patientVitals?.st_depression}
           hasStElevation={patientVitals?.st_elevation}
+          hasTinversion={patientVitals?.t_inversion}
+          hasQWave={patientVitals?.q_wave}
         />
 
         {/* Vessel Plaque Inspector Launcher Pills */}
@@ -231,6 +241,7 @@ export const Canvas3D: React.FC<Canvas3DProps> = ({
           {(['LAD', 'LCX', 'RCA'] as const).map((v) => {
             const vData = vessels[v];
             const isSelected = selectedVessel === v;
+            const isStented = stentedVessels[v];
             return (
               <div key={v} className="flex items-center space-x-1">
                 <button
@@ -238,22 +249,28 @@ export const Canvas3D: React.FC<Canvas3DProps> = ({
                   className={`px-2 py-1 rounded-lg text-xs font-semibold transition flex items-center space-x-1.5 ${
                     isSelected
                       ? 'bg-slate-800 text-white'
+                      : isStented
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-300'
                       : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                   title={`Focus ${v}`}
                 >
                   <span
                     className="w-2 h-2 rounded-full inline-block"
-                    style={{ backgroundColor: vData.color }}
+                    style={{ backgroundColor: isStented ? '#10b981' : vData.color }}
                   ></span>
                   <span>{v}</span>
-                  <span className="text-[10px] opacity-80">{vData.stenosis_percentage}%</span>
+                  <span className="text-[10px] opacity-80">{isStented ? 'Stent' : `${vData.stenosis_percentage}%`}</span>
                 </button>
 
                 {/* Direct Cross-Section Inspector Button */}
                 <button
                   onClick={() => handleOpenInspector(v)}
-                  className="p-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 transition"
+                  className={`p-1 rounded transition ${
+                    isStented
+                      ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                  }`}
                   title={`Open ${v} Plaque Cross-Section Cutaway`}
                 >
                   <Maximize2 className="w-3 h-3" />
@@ -270,6 +287,8 @@ export const Canvas3D: React.FC<Canvas3DProps> = ({
           vesselKey={inspectModalVessel}
           vesselInfo={vessels[inspectModalVessel]}
           onClose={() => setInspectModalVessel(null)}
+          isStented={stentedVessels[inspectModalVessel]}
+          onToggleStent={(v, st) => setStentedVessels((prev) => ({ ...prev, [v]: st }))}
         />
       )}
     </div>

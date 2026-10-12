@@ -1,6 +1,6 @@
 """
 FastAPI Server for Multimodal AI Hackathon 2026 - Track A:
-Cardiovascular Risk Visualization & Multi-Vessel Stenosis Prediction.
+PulsePlex: Cardiovascular Risk Visualization & Multi-Vessel Stenosis Prediction.
 """
 
 import os
@@ -35,7 +35,7 @@ METRICS_PATH = os.path.join(MODELS_DIR, "metrics.json")
 PREPROCESSOR_PATH = os.path.join(MODELS_DIR, "preprocessor.pkl")
 
 app = FastAPI(
-    title="Cardiovascular Risk & Multi-Vessel Stenosis AI API",
+    title="PulsePlex AI API",
     description="Multi-vessel coronary artery stenosis prediction and SHAP explainability engine.",
     version="1.0.0"
 )
@@ -286,7 +286,7 @@ def calculate_cad_rads_classification(vessel_dict: Dict[str, Any], stenotic_coun
 def health_check():
     return {
         "status": "healthy",
-        "service": "Cardiovascular Risk Prediction & 3D Visualization Backend",
+        "service": "PulsePlex Backend",
         "version": "1.0.0",
         "models_loaded": list(models.keys()),
         "preprocessor_ready": preprocessor is not None,

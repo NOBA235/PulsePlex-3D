@@ -17,6 +17,11 @@ interface HeartMeshProps {
   isBeating?: boolean;
   viewMode?: CTViewMode;
   onInspectLesion?: (vessel: 'LAD' | 'LCX' | 'RCA') => void;
+  stentedVessels?: {
+    LAD?: boolean;
+    LCX?: boolean;
+    RCA?: boolean;
+  };
 }
 
 export const HeartMesh: React.FC<HeartMeshProps> = ({
@@ -26,6 +31,7 @@ export const HeartMesh: React.FC<HeartMeshProps> = ({
   isBeating = true,
   viewMode = 'anatomical',
   onInspectLesion,
+  stentedVessels,
 }) => {
   const heartGroupRef = useRef<THREE.Group>(null);
   const flowGroupRef = useRef<THREE.Group>(null);
@@ -186,14 +192,19 @@ export const HeartMesh: React.FC<HeartMeshProps> = ({
   const getVesselStyle = (vesselKey: 'LAD' | 'LCX' | 'RCA') => {
     const isSelected = selectedVessel === vesselKey;
     const isHovered = hoveredVessel === vesselKey;
+    const isStented = Boolean(stentedVessels?.[vesselKey]);
     const info = vessels[vesselKey];
-    const baseColor = info?.color || '#22c55e';
+    const baseColor = isStented ? '#10b981' : (info?.color || '#22c55e');
 
     let displayColor = baseColor;
     let emissiveColor = baseColor;
     let emissiveInt = 0.25;
 
-    if (viewMode === 'angio') {
+    if (isStented) {
+      displayColor = '#10b981';
+      emissiveColor = '#34d399';
+      emissiveInt = 0.5;
+    } else if (viewMode === 'angio') {
       // Contrast lumen glow (bright white/cyan for healthy, warning yellow/red for stenosed)
       displayColor = info.stenotic ? baseColor : '#38bdf8';
       emissiveColor = info.stenotic ? baseColor : '#0284c7';
@@ -514,6 +525,23 @@ export const HeartMesh: React.FC<HeartMeshProps> = ({
           </group>
         )}
 
+        {/* LAD Stent Mesh (Simulated Drug-Eluting Stent) */}
+        {stentedVessels?.LAD && (
+          <group position={[0.24, 0.45, 0.68]} rotation={[0.4, -0.2, 0.3]}>
+            <mesh>
+              <cylinderGeometry args={[0.055, 0.055, 0.22, 16, 6, true]} />
+              <meshStandardMaterial
+                color="#38bdf8"
+                emissive="#0284c7"
+                emissiveIntensity={0.85}
+                metalness={0.95}
+                roughness={0.1}
+                wireframe
+              />
+            </mesh>
+          </group>
+        )}
+
         {/* LAD Interactive Landmark Node */}
         <mesh
           position={[0.21, 0.12, 0.80]}
@@ -632,6 +660,23 @@ export const HeartMesh: React.FC<HeartMeshProps> = ({
                 emissiveIntensity={viewMode === 'calcium' ? 1.0 : 0.4}
                 roughness={0.3}
                 metalness={viewMode === 'calcium' ? 0.8 : 0.2}
+              />
+            </mesh>
+          </group>
+        )}
+
+        {/* LCX Stent Mesh (Simulated Drug-Eluting Stent) */}
+        {stentedVessels?.LCX && (
+          <group position={[0.72, 0.48, 0.14]} rotation={[0.2, 0.6, -0.4]}>
+            <mesh>
+              <cylinderGeometry args={[0.052, 0.052, 0.20, 16, 6, true]} />
+              <meshStandardMaterial
+                color="#38bdf8"
+                emissive="#0284c7"
+                emissiveIntensity={0.85}
+                metalness={0.95}
+                roughness={0.1}
+                wireframe
               />
             </mesh>
           </group>
@@ -761,6 +806,23 @@ export const HeartMesh: React.FC<HeartMeshProps> = ({
                 emissiveIntensity={viewMode === 'calcium' ? 1.0 : 0.4}
                 roughness={0.3}
                 metalness={viewMode === 'calcium' ? 0.8 : 0.2}
+              />
+            </mesh>
+          </group>
+        )}
+
+        {/* RCA Stent Mesh (Simulated Drug-Eluting Stent) */}
+        {stentedVessels?.RCA && (
+          <group position={[-0.82, 0.12, 0.22]} rotation={[0.5, -0.3, -0.2]}>
+            <mesh>
+              <cylinderGeometry args={[0.055, 0.055, 0.22, 16, 6, true]} />
+              <meshStandardMaterial
+                color="#38bdf8"
+                emissive="#0284c7"
+                emissiveIntensity={0.85}
+                metalness={0.95}
+                roughness={0.1}
+                wireframe
               />
             </mesh>
           </group>

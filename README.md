@@ -1,4 +1,4 @@
-# CardioRisk AI: Multi-Vessel Coronary Stenosis Prediction & Interactive 3D Risk Mapping
+# PulsePlex: Multi-Vessel Coronary Stenosis Prediction & Interactive 3D Risk Mapping
 ### Multimodal AI Hackathon 2026 — Track A: Cardiovascular Risk Visualization & Prediction
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
@@ -12,13 +12,13 @@
 
 ## 1. System Overview & Architecture
 
-**CardioRisk AI** is an end-to-end clinical decision-support and 3D visual mapping system designed for multi-vessel coronary artery disease (CAD) risk assessment and artery-specific stenosis prediction.
+**PulsePlex** is an end-to-end clinical decision-support and 3D visual mapping system designed for multi-vessel coronary artery disease (CAD) risk assessment and artery-specific stenosis prediction.
 
 The platform bridges gradient-boosted machine learning, game-engine-grade WebGL rendering, and local game-theoretic feature attributions (SHAP) to transform complex clinical vectors (demographics, vital signs, ECG waveforms, echocardiography, and laboratory biomarkers) into an interpretable, spatial 3D coronary vascular map.
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────┐
-│                             CardioRisk AI Architecture                           │
+│                               PulsePlex Architecture                             │
 └──────────────────────────────────────────────────────────────────────────────────┘
                  
       [ Clinical Inputs & Patient Sliders ]
@@ -120,10 +120,41 @@ The 3D cardiac viewer leverages **React Three Fiber** and **Three.js** to projec
 
 ---
 
-## 5. Directory Structure
+## 5. Winning Differentiators & Clinical Innovations
+
+PulsePlex introduces five clinical decision-support and interventional innovations that set it apart from standard risk calculators:
+
+1. **"What-If" Counterfactual Intervention Simulator (Clinical Actionability):**
+   - Allows clinicians to simulate Guideline-Directed Medical Therapy (GDMT) in real time (e.g. *High-Intensity Statin Therapy*, *Antihypertensive Optimization to SBP $\le 118$ mmHg*, *Smoking Cessation Protocol*, *GLP-1 RA Weight Management*).
+   - Instantaneously projects post-intervention risk reductions, computes Number Needed to Treat (NNT), and dynamically switches the 3D heart vessel colors from ischemic red to patent green.
+
+2. **Virtual PCI & Drug-Eluting Stent (DES) Deployment in 3D:**
+   - In the Plaque Inspector cross-section, clinicians can simulate balloon angioplasty and coronary stenting.
+   - Restores Minimal Lumen Diameter (MLD) and Area (MLA), drops stenosis from $>80\%$ to $<10\%$ residual, and elevates hemodynamic FFR from an ischemic $\le 0.65$ to $0.96$.
+   - Renders a 3D platinum-chromium wireframe stent mesh on the coronary artery trajectory in the Three.js viewport.
+
+3. **Multimodal Clinical Consultation Report & EHR Export:**
+   - Generates a clinical consultation note formatted according to ACC/AHA guidelines.
+   - Incorporates patient vitals, 12-lead ECG changes, SCCT CAD-RADS™ 2.0 classifications, SHAP mechanistic attributions, and GDMT recommendations.
+   - Includes one-click copy to clipboard for hospital EHRs and a printable PDF stylesheet (`window.print()`).
+
+4. **Dynamic Ischemic 12-Lead ECG Morphology Sync:**
+   - Real-time Lead II canvas waveform dynamically morphs its P-Q-R-S-T morphology based on the patient's actual clinical profile:
+     - ST-segment depression (subendocardial ischemia)
+     - ST-segment elevation (transmural injury / STEMI)
+     - T-wave inversion & pathological Q-waves
+     - Heart rate-dependent sweep velocity.
+
+5. **SCCT CAD-RADS™ 2.0 & CCTA Plaque Phenotyping:**
+   - Translates raw predictions into recognized clinical grades (CAD-RADS 0 through 5/V).
+   - Breaks down atheroma volume, soft lipid core attenuation ($<30-50$ HU), and dense calcium deposits ($>900$ HU).
+
+---
+
+## 6. Directory Structure
 
 ```
-cardio-risk-ai/
+pulseplex/
 ├── backend/
 │   ├── data/
 │   │   ├── z_alizadeh_sani_extended.xlsx # Original UCI/Mendeley dataset
@@ -149,9 +180,13 @@ cardio-risk-ai/
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── Canvas3D.tsx              # Three.js / R3F WebGL viewport
-│   │   │   ├── HeartMesh.tsx             # Procedural cardiac mesh & vessel tubes
+│   │   │   ├── HeartMesh.tsx             # Procedural cardiac mesh, vessel tubes & 3D stent models
 │   │   │   ├── Dashboard.tsx             # Risk gauges, metrics & SHAP charts
-│   │   │   └── InputForm.tsx             # Interactive sliders, tabs & presets
+│   │   │   ├── InputForm.tsx             # Interactive sliders, tabs & presets
+│   │   │   ├── InterventionSimulator.tsx # What-If GDMT & lifestyle counterfactual engine
+│   │   │   ├── PlaqueCutawayModal.tsx    # CCTA plaque morphology & virtual PCI stent simulator
+│   │   │   ├── ClinicalReportModal.tsx   # ACC/AHA clinical consultation note & EHR export
+│   │   │   └── ECGMonitor.tsx            # Synced real-time Lead II ECG waveform generator
 │   │   ├── services/
 │   │   │   └── api.ts                    # Type-safe API client for backend
 │   │   ├── App.tsx                       # Main layout & disclaimer footer
@@ -166,7 +201,7 @@ cardio-risk-ai/
 
 ---
 
-## 6. Step-by-Step Local Setup & Execution
+## 7. Step-by-Step Local Setup & Execution
 
 ### Prerequisites
 - **Python:** 3.10 or higher
@@ -237,7 +272,7 @@ cardio-risk-ai/
 
 ---
 
-## 7. API Endpoints Specification
+## 8. API Endpoints Specification
 
 | Method | Endpoint | Description | Sample Output |
 | :--- | :--- | :--- | :--- |
@@ -248,7 +283,7 @@ cardio-risk-ai/
 
 ---
 
-## 8. Safety & Regulatory Disclaimer
+## 9. Safety & Regulatory Disclaimer
 
 > [!CAUTION]
 > **Notice:** Predictions and visualizations generated by this system are strictly for educational and decision-support purposes only. They do not replace formal diagnostic imaging (coronary computed tomography angiography, invasive coronary angiography) or clinical evaluations conducted by licensed medical practitioners.
