@@ -8,7 +8,6 @@ import {
   Flame,
   CheckCircle2,
   Sliders,
-  Sparkles,
   RefreshCw,
 } from 'lucide-react';
 
@@ -59,8 +58,8 @@ export const InputForm: React.FC<InputFormProps> = ({
         {/* Quick Presets Bar */}
         <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5">
           <div className="text-[11px] font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>Load Authentic Clinical Preset Profiles:</span>
+            <Activity className="w-3.5 h-3.5 text-slate-500" />
+            <span>Reference patient profiles</span>
           </div>
           <div className="grid grid-cols-2 gap-1.5">
             {samplePatients.map((sample) => (
@@ -542,7 +541,7 @@ export const InputForm: React.FC<InputFormProps> = ({
           type="button"
           onClick={onAnalyze}
           disabled={isLoading}
-          className="w-full py-3 px-4 rounded-xl font-bold text-sm bg-gradient-to-r from-blue-600 via-indigo-600 to-rose-600 hover:from-blue-500 hover:to-rose-500 text-white shadow-lg shadow-blue-500/20 active:scale-[0.99] transition flex items-center justify-center space-x-2 disabled:opacity-50"
+          className="w-full py-3 px-4 rounded-lg font-semibold text-sm bg-slate-800 hover:bg-slate-700 text-white active:scale-[0.99] transition flex items-center justify-center space-x-2 disabled:opacity-50"
         >
           {isLoading ? (
             <>

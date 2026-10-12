@@ -9,7 +9,6 @@ import { ECGMonitor } from './ECGMonitor';
 import {
   RotateCcw,
   Layers,
-  Sparkles,
   Droplet,
   Eye,
   Activity,
@@ -81,18 +80,19 @@ export const Canvas3D: React.FC<Canvas3DProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full min-h-[500px] bg-gradient-to-b from-[#0b101d] via-[#070b14] to-[#04060c] rounded-2xl border border-slate-800 shadow-2xl overflow-hidden flex flex-col">
+    <div className="research-canvas relative w-full h-full min-h-[500px] bg-[#f6f7f5] rounded-xl border border-slate-300 shadow-sm overflow-hidden flex flex-col">
       {/* ================= TOP TOOLBAR ================= */}
       <div className="absolute top-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
         {/* Left Badges: Mode & CAD-RADS */}
         <div className="flex items-center space-x-2 pointer-events-auto">
-          <div className="flex items-center space-x-2 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/60 shadow-lg">
-            <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
-            <span className="text-xs font-bold text-white tracking-wide">3D Coronary Anatomy & Plaque Engine</span>
+          <div className="flex items-center space-x-2 bg-white/95 px-3 py-1.5 rounded-lg border border-slate-300">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-700"></span>
+            <span className="text-xs font-semibold text-slate-800 tracking-wide">Interactive cardiac anatomy</span>
+            <span className="text-[10px] text-slate-500">· schematic · hover to identify</span>
           </div>
 
           {cadRads && (
-            <div className="hidden sm:flex items-center space-x-1.5 bg-indigo-950/80 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-indigo-700/50 text-indigo-300 shadow-lg text-xs font-mono font-bold">
+            <div className="hidden sm:flex items-center space-x-1.5 bg-white px-2.5 py-1.5 rounded-lg border border-slate-300 text-slate-700 text-xs font-mono font-semibold">
               <span>{cadRads.grade}</span>
             </div>
           )}
@@ -101,71 +101,71 @@ export const Canvas3D: React.FC<Canvas3DProps> = ({
         {/* Right Controls: CT Window Modes & View Presets */}
         <div className="flex items-center flex-wrap gap-1.5 pointer-events-auto">
           {/* CT Window Mode Switcher (CORA Direct Feature) */}
-          <div className="flex items-center bg-slate-900/90 backdrop-blur-md p-1 rounded-xl border border-slate-700/60 shadow-lg text-xs">
+          <div className="flex items-center bg-white/95 p-1 rounded-lg border border-slate-300 text-xs">
             <button
               onClick={() => setViewMode('anatomical')}
               className={`px-2.5 py-1 rounded-lg font-medium transition flex items-center space-x-1 ${
-                viewMode === 'anatomical' ? 'bg-rose-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                viewMode === 'anatomical' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-900'
               }`}
-              title="Photorealistic Heart Anatomy"
+              title="Anatomical schematic"
             >
-              <span>🫀 Anatomy</span>
+              <span>Anatomy</span>
             </button>
             <button
               onClick={() => setViewMode('angio')}
               className={`px-2.5 py-1 rounded-lg font-medium transition flex items-center space-x-1 ${
-                viewMode === 'angio' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                viewMode === 'angio' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-900'
               }`}
-              title="CCTA Angiographic Lumen Contrast (CORA 350/700 HU)"
+              title="Angiographic display mode"
             >
-              <span>💉 CCTA Angio</span>
+              <span>Angio</span>
             </button>
             <button
               onClick={() => setViewMode('calcium')}
               className={`px-2.5 py-1 rounded-lg font-medium transition flex items-center space-x-1 ${
-                viewMode === 'calcium' ? 'bg-amber-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                viewMode === 'calcium' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-900'
               }`}
-              title="Dense Calcium & Atheroma Scoring (CORA 500/2000 HU)"
+              title="Calcium display mode"
             >
-              <span>⚡ Calcium HU</span>
+              <span>Calcium</span>
             </button>
             <button
               onClick={() => setViewMode('flow')}
               className={`px-2.5 py-1 rounded-lg font-medium transition flex items-center space-x-1 ${
-                viewMode === 'flow' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                viewMode === 'flow' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-900'
               }`}
-              title="Hemodynamic Flow Velocity Dynamics"
+              title="Illustrative flow display"
             >
-              <span>🌊 Flow</span>
+              <span>Flow</span>
             </button>
           </div>
 
           {/* Camera Angles */}
-          <div className="flex items-center space-x-1 bg-slate-900/90 backdrop-blur-md p-1 rounded-xl border border-slate-700/60 shadow-lg text-xs">
+          <div className="flex items-center space-x-1 bg-white/95 p-1 rounded-lg border border-slate-300 text-xs">
             <button
               onClick={() => setCameraView('anterior')}
-              className="px-2 py-1 text-[11px] rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition"
+              className="px-2 py-1 text-[11px] rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition"
               title="Focus Anterior / LAD"
             >
               LAD
             </button>
             <button
               onClick={() => setCameraView('lateral')}
-              className="px-2 py-1 text-[11px] rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition"
+              className="px-2 py-1 text-[11px] rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition"
               title="Focus Lateral / LCX"
             >
               LCX
             </button>
             <button
               onClick={() => setCameraView('inferior')}
-              className="px-2 py-1 text-[11px] rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition"
+              className="px-2 py-1 text-[11px] rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition"
               title="Focus Right / RCA"
             >
               RCA
             </button>
             <button
               onClick={() => setCameraView('reset')}
-              className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition"
+              className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded transition"
               title="Reset Viewpoint"
             >
               <RotateCcw className="w-3.5 h-3.5" />
@@ -173,7 +173,7 @@ export const Canvas3D: React.FC<Canvas3DProps> = ({
             <button
               onClick={onToggleBeating}
               className={`px-2 py-1 text-[11px] rounded-lg font-medium transition flex items-center space-x-1 ${
-                isBeating ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'text-slate-400 hover:bg-slate-800'
+                isBeating ? 'bg-slate-100 text-slate-700 border border-slate-300' : 'text-slate-500 hover:bg-slate-100'
               }`}
               title="Toggle Cardiac Rhythm"
             >
@@ -187,11 +187,10 @@ export const Canvas3D: React.FC<Canvas3DProps> = ({
       <div className="flex-1 w-full h-full canvas-container">
         <Canvas gl={{ antialias: true, alpha: true }}>
           <PerspectiveCamera makeDefault position={[1.5, 0.8, 3.5]} fov={45} />
-          <ambientLight intensity={viewMode === 'calcium' ? 0.4 : 0.95} />
-          <directionalLight position={[5, 8, 5]} intensity={1.6} castShadow />
-          <directionalLight position={[-5, -4, -4]} intensity={0.7} color="#60a5fa" />
-          <pointLight position={[0, 2, 2.5]} intensity={0.9} color="#ffffff" />
-          <pointLight position={[-2, -1, -2]} intensity={0.5} color="#ec4899" />
+          <ambientLight intensity={viewMode === 'calcium' ? 0.55 : 1.05} />
+          <directionalLight position={[5, 8, 5]} intensity={1.25} castShadow />
+          <directionalLight position={[-5, -4, -4]} intensity={0.45} color="#d7e0e5" />
+          <pointLight position={[0, 2, 2.5]} intensity={0.35} color="#ffffff" />
 
           <Center>
             <HeartMesh
@@ -227,8 +226,8 @@ export const Canvas3D: React.FC<Canvas3DProps> = ({
         />
 
         {/* Vessel Plaque Inspector Launcher Pills */}
-        <div className="flex items-center space-x-1.5 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/60 shadow-xl pointer-events-auto">
-          <span className="text-[11px] text-slate-400 font-medium mr-1">Vessels:</span>
+        <div className="flex items-center space-x-1.5 bg-white/95 px-3 py-1.5 rounded-lg border border-slate-300 pointer-events-auto">
+          <span className="text-[11px] text-slate-600 font-medium mr-1">Coronaries:</span>
           {(['LAD', 'LCX', 'RCA'] as const).map((v) => {
             const vData = vessels[v];
             const isSelected = selectedVessel === v;
@@ -238,8 +237,8 @@ export const Canvas3D: React.FC<Canvas3DProps> = ({
                   onClick={() => onSelectVessel(isSelected ? null : v)}
                   className={`px-2 py-1 rounded-lg text-xs font-semibold transition flex items-center space-x-1.5 ${
                     isSelected
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700'
+                      ? 'bg-slate-800 text-white'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                   title={`Focus ${v}`}
                 >
@@ -254,7 +253,7 @@ export const Canvas3D: React.FC<Canvas3DProps> = ({
                 {/* Direct Cross-Section Inspector Button */}
                 <button
                   onClick={() => handleOpenInspector(v)}
-                  className="p-1 rounded bg-slate-800/60 hover:bg-indigo-600 hover:text-white text-slate-400 transition"
+                  className="p-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 transition"
                   title={`Open ${v} Plaque Cross-Section Cutaway`}
                 >
                   <Maximize2 className="w-3 h-3" />

@@ -30,6 +30,36 @@ export const HeartMesh: React.FC<HeartMeshProps> = ({
   const heartGroupRef = useRef<THREE.Group>(null);
   const flowGroupRef = useRef<THREE.Group>(null);
   const [hoveredVessel, setHoveredVessel] = useState<'LAD' | 'LCX' | 'RCA' | null>(null);
+  const [hoveredPart, setHoveredPart] = useState<{
+    name: string;
+    description: string;
+    position: [number, number, number];
+  } | null>(null);
+  const ventricularBodyGeometry = useMemo(
+    () => new THREE.LatheGeometry([
+      new THREE.Vector2(0.015, -1.12),
+      new THREE.Vector2(0.12, -1.04),
+      new THREE.Vector2(0.30, -0.82),
+      new THREE.Vector2(0.52, -0.50),
+      new THREE.Vector2(0.70, -0.12),
+      new THREE.Vector2(0.76, 0.22),
+      new THREE.Vector2(0.66, 0.50),
+      new THREE.Vector2(0.42, 0.72),
+      new THREE.Vector2(0.12, 0.82),
+    ], 48),
+    [],
+  );
+
+  const trackAnatomy = (name: string, description: string, point: THREE.Vector3) => {
+    const localPoint = heartGroupRef.current
+      ? heartGroupRef.current.worldToLocal(point.clone())
+      : point.clone();
+    setHoveredPart({
+      name,
+      description,
+      position: [localPoint.x, localPoint.y, localPoint.z],
+    });
+  };
 
   // Wiggers cardiac cycle simulation (Systole contraction + Diastole filling)
   useFrame((state) => {
@@ -232,7 +262,7 @@ export const HeartMesh: React.FC<HeartMeshProps> = ({
       case 'anatomical':
       default:
         return {
-          color: '#881337', // Deep cardiac muscle crimson
+          color: '#a94b4d', // Muted myocardium tone for the anatomical view
           roughness: 0.38,
           metalness: 0.12,
           transparent: false,
@@ -245,50 +275,77 @@ export const HeartMesh: React.FC<HeartMeshProps> = ({
     <group ref={heartGroupRef} dispose={null}>
       {/* ================= HEART MUSCLE / ANATOMICAL CHAMBERS ================= */}
       {/* Left Ventricle (LV) - Main thick muscular cone */}
-      <mesh position={[0.12, -0.22, 0.14]} rotation={[0.15, 0, -0.2]}>
-        <sphereGeometry args={[0.88, 36, 36]} />
+      <mesh
+        geometry={ventricularBodyGeometry}
+        position={[0.12, -0.02, 0.14]}
+        rotation={[0.06, 0, -0.12]}
+        scale={[1, 1, 0.84]}
+        onPointerMove={(e) => trackAnatomy(
+          e.point.y < -0.72 ? 'Cardiac apex' : 'Left ventricle',
+          e.point.y < -0.72
+            ? 'Inferior tip of the heart, formed predominantly by the left ventricle.'
+            : 'Main systemic pumping chamber; forms much of the apex.',
+          e.point,
+        )}
+        onPointerOut={() => setHoveredPart(null)}
+      >
         <meshStandardMaterial {...myocardiumProps} />
       </mesh>
 
       {/* Right Ventricle (RV) - Anterior crescent chamber hugging LV */}
-      <mesh position={[-0.34, -0.18, 0.24]} rotation={[0.12, 0.22, 0.18]} scale={[0.84, 0.96, 0.74]}>
+      <mesh
+        position={[-0.34, -0.18, 0.24]}
+        rotation={[0.12, 0.22, 0.18]}
+        scale={[0.84, 0.96, 0.74]}
+        onPointerMove={(e) => trackAnatomy('Right ventricle', 'Anterior chamber that pumps blood into the pulmonary circulation.', e.point)}
+        onPointerOut={() => setHoveredPart(null)}
+      >
         <sphereGeometry args={[0.76, 36, 36]} />
         <meshStandardMaterial
           {...myocardiumProps}
-          color={viewMode === 'anatomical' ? '#701a35' : myocardiumProps.color}
+          color={viewMode === 'anatomical' ? '#8f4246' : myocardiumProps.color}
         />
       </mesh>
 
-      {/* Cardiac Apex - Conical anatomical taper */}
-      <mesh position={[0.08, -0.88, 0.38]} rotation={[0.22, 0, -0.22]} scale={[0.62, 0.85, 0.58]}>
-        <coneGeometry args={[0.66, 0.82, 36]} />
-        <meshStandardMaterial {...myocardiumProps} />
-      </mesh>
-
       {/* Right Ventricular Outflow Tract (RVOT / Conus Arteriosus) */}
-      <mesh position={[-0.14, 0.58, 0.32]} rotation={[0.3, -0.15, 0.15]}>
+      <mesh
+        position={[-0.14, 0.58, 0.32]}
+        rotation={[0.3, -0.15, 0.15]}
+        onPointerMove={(e) => trackAnatomy('Right ventricular outflow tract', 'Outflow pathway from the right ventricle to the pulmonary trunk.', e.point)}
+        onPointerOut={() => setHoveredPart(null)}
+      >
         <cylinderGeometry args={[0.22, 0.28, 0.5, 24]} />
         <meshStandardMaterial
           {...myocardiumProps}
-          color={viewMode === 'anatomical' ? '#7c1d3c' : myocardiumProps.color}
+          color={viewMode === 'anatomical' ? '#98464b' : myocardiumProps.color}
         />
       </mesh>
 
       {/* Left Atrium & Auricle (Posterior-superior) */}
-      <mesh position={[0.26, 0.58, -0.14]} scale={[0.68, 0.62, 0.64]}>
+      <mesh
+        position={[0.26, 0.58, -0.14]}
+        scale={[0.68, 0.62, 0.64]}
+        onPointerMove={(e) => trackAnatomy('Left atrium', 'Receives oxygenated blood returning from the pulmonary veins.', e.point)}
+        onPointerOut={() => setHoveredPart(null)}
+      >
         <sphereGeometry args={[0.66, 32, 32]} />
         <meshStandardMaterial
           {...myocardiumProps}
-          color={viewMode === 'anatomical' ? '#581c87' : myocardiumProps.color}
+          color={viewMode === 'anatomical' ? '#a85c65' : myocardiumProps.color}
         />
       </mesh>
 
       {/* Right Atrium & Auricle (Anterior-superior) */}
-      <mesh position={[-0.32, 0.52, -0.02]} scale={[0.66, 0.58, 0.62]}>
+      <mesh
+        position={[-0.32, 0.52, -0.02]}
+        scale={[0.66, 0.58, 0.62]}
+        onPointerMove={(e) => trackAnatomy('Right atrium', 'Receives systemic venous blood and passes it to the right ventricle.', e.point)}
+        onPointerOut={() => setHoveredPart(null)}
+      >
         <sphereGeometry args={[0.62, 32, 32]} />
         <meshStandardMaterial
           {...myocardiumProps}
-          color={viewMode === 'anatomical' ? '#4a1d96' : myocardiumProps.color}
+          color={viewMode === 'anatomical' ? '#934f58' : myocardiumProps.color}
         />
       </mesh>
 
@@ -310,41 +367,61 @@ export const HeartMesh: React.FC<HeartMeshProps> = ({
 
       {/* ================= GREAT VESSELS ================= */}
       {/* Ascending Aorta (Arising from Aortic Root with Sinuses of Valsalva) */}
-      <mesh position={[0.02, 1.08, 0.08]} rotation={[-0.12, 0.22, -0.28]}>
+      <mesh
+        position={[0.02, 1.08, 0.08]}
+        rotation={[-0.12, 0.22, -0.28]}
+        onPointerMove={(e) => trackAnatomy('Ascending aorta', 'Carries oxygenated blood from the left ventricle into the systemic circulation.', e.point)}
+        onPointerOut={() => setHoveredPart(null)}
+      >
         <cylinderGeometry args={[0.23, 0.27, 0.85, 32]} />
         <meshStandardMaterial
-          color={viewMode === 'angio' ? '#38bdf8' : '#e11d48'}
-          emissive={viewMode === 'angio' ? '#0284c7' : '#9f1239'}
-          emissiveIntensity={viewMode === 'angio' ? 0.6 : 0.2}
-          roughness={0.28}
-          metalness={0.2}
+          color={viewMode === 'angio' ? '#38bdf8' : '#a9494c'}
+          emissive={viewMode === 'angio' ? '#0284c7' : '#000000'}
+          emissiveIntensity={viewMode === 'angio' ? 0.35 : 0}
+          roughness={0.68}
+          metalness={0.02}
         />
       </mesh>
 
       {/* Aortic Arch Curvature & Supra-Aortic Branches */}
-      <mesh position={[0.18, 1.48, -0.06]} rotation={[0.4, 0.3, -0.5]}>
+      <mesh
+        position={[0.18, 1.48, -0.06]}
+        rotation={[0.4, 0.3, -0.5]}
+        onPointerMove={(e) => trackAnatomy('Aortic arch', 'Curved continuation of the aorta; gives rise to major branches supplying the head and upper limbs.', e.point)}
+        onPointerOut={() => setHoveredPart(null)}
+      >
         <torusGeometry args={[0.28, 0.12, 16, 24, Math.PI * 0.75]} />
         <meshStandardMaterial
-          color={viewMode === 'angio' ? '#38bdf8' : '#e11d48'}
-          roughness={0.28}
-          metalness={0.2}
+          color={viewMode === 'angio' ? '#38bdf8' : '#a9494c'}
+          roughness={0.68}
+          metalness={0.02}
         />
       </mesh>
 
       {/* Pulmonary Trunk (Crossing anterior to aorta from RVOT) */}
-      <mesh position={[-0.14, 1.0, 0.28]} rotation={[0.28, -0.18, 0.22]}>
+      <mesh
+        position={[-0.14, 1.0, 0.28]}
+        rotation={[0.28, -0.18, 0.22]}
+        onPointerMove={(e) => trackAnatomy('Pulmonary trunk', 'Carries deoxygenated blood from the right ventricle toward the lungs.', e.point)}
+        onPointerOut={() => setHoveredPart(null)}
+      >
         <cylinderGeometry args={[0.2, 0.23, 0.75, 32]} />
         <meshStandardMaterial
-          color={viewMode === 'angio' ? '#1e40af' : '#2563eb'}
-          roughness={0.32}
-          metalness={0.2}
+          color={viewMode === 'angio' ? '#1e40af' : '#66849b'}
+          roughness={0.68}
+          metalness={0.02}
         />
       </mesh>
 
       {/* Superior Vena Cava (SVC) entering Right Atrium */}
-      <mesh position={[-0.56, 0.94, -0.18]} rotation={[0, 0, 0.12]}>
+      <mesh
+        position={[-0.56, 0.94, -0.18]}
+        rotation={[0, 0, 0.12]}
+        onPointerMove={(e) => trackAnatomy('Superior vena cava', 'Returns blood from the upper body to the right atrium.', e.point)}
+        onPointerOut={() => setHoveredPart(null)}
+      >
         <cylinderGeometry args={[0.15, 0.17, 0.75, 24]} />
-        <meshStandardMaterial color="#1e3a8a" roughness={0.4} metalness={0.15} />
+        <meshStandardMaterial color="#5d7d94" roughness={0.68} metalness={0.02} />
       </mesh>
 
       {/* ================= CORONARY ARTERY: LEFT MAIN (LMCA) ================= */}
@@ -371,7 +448,11 @@ export const HeartMesh: React.FC<HeartMeshProps> = ({
             e.stopPropagation();
             setHoveredVessel('LAD');
           }}
-          onPointerOut={() => setHoveredVessel(null)}
+          onPointerMove={(e) => trackAnatomy('Left anterior descending artery (LAD)', 'Runs in the anterior interventricular groove and supplies much of the anterior left ventricle.', e.point)}
+          onPointerOut={() => {
+            setHoveredVessel(null);
+            setHoveredPart(null);
+          }}
         >
           <meshStandardMaterial
             color={ladStyle.color}
@@ -451,7 +532,7 @@ export const HeartMesh: React.FC<HeartMeshProps> = ({
           />
 
           {(hoveredVessel === 'LAD' || selectedVessel === 'LAD') && (
-            <Html distanceFactor={8} position={[0, 0.18, 0]}>
+            <Html position={[0, 0.18, 0]}>
               <div className="bg-slate-900/95 border border-slate-700 shadow-2xl p-3 rounded-xl text-xs w-56 backdrop-blur-md pointer-events-auto transform -translate-x-1/2">
                 <div className="flex items-center justify-between font-bold mb-1">
                   <span className="text-white">LAD (Left Anterior Desc)</span>
@@ -514,7 +595,11 @@ export const HeartMesh: React.FC<HeartMeshProps> = ({
             e.stopPropagation();
             setHoveredVessel('LCX');
           }}
-          onPointerOut={() => setHoveredVessel(null)}
+          onPointerMove={(e) => trackAnatomy('Left circumflex artery (LCX)', 'Courses in the left atrioventricular groove and supplies the lateral myocardium.', e.point)}
+          onPointerOut={() => {
+            setHoveredVessel(null);
+            setHoveredPart(null);
+          }}
         >
           <meshStandardMaterial
             color={lcxStyle.color}
@@ -570,7 +655,7 @@ export const HeartMesh: React.FC<HeartMeshProps> = ({
           />
 
           {(hoveredVessel === 'LCX' || selectedVessel === 'LCX') && (
-            <Html distanceFactor={8} position={[0, 0.18, 0]}>
+            <Html position={[0, 0.18, 0]}>
               <div className="bg-slate-900/95 border border-slate-700 shadow-2xl p-3 rounded-xl text-xs w-56 backdrop-blur-md pointer-events-auto transform -translate-x-1/2">
                 <div className="flex items-center justify-between font-bold mb-1">
                   <span className="text-white">LCX (Left Circumflex)</span>
@@ -628,7 +713,11 @@ export const HeartMesh: React.FC<HeartMeshProps> = ({
             e.stopPropagation();
             setHoveredVessel('RCA');
           }}
-          onPointerOut={() => setHoveredVessel(null)}
+          onPointerMove={(e) => trackAnatomy('Right coronary artery (RCA)', 'Courses in the right atrioventricular groove and commonly supplies the inferior myocardium.', e.point)}
+          onPointerOut={() => {
+            setHoveredVessel(null);
+            setHoveredPart(null);
+          }}
         >
           <meshStandardMaterial
             color={rcaStyle.color}
@@ -695,7 +784,7 @@ export const HeartMesh: React.FC<HeartMeshProps> = ({
           />
 
           {(hoveredVessel === 'RCA' || selectedVessel === 'RCA') && (
-            <Html distanceFactor={8} position={[0, 0.18, 0]}>
+            <Html position={[0, 0.18, 0]}>
               <div className="bg-slate-900/95 border border-slate-700 shadow-2xl p-3 rounded-xl text-xs w-56 backdrop-blur-md pointer-events-auto transform -translate-x-1/2">
                 <div className="flex items-center justify-between font-bold mb-1">
                   <span className="text-white">RCA (Right Coronary)</span>
@@ -739,6 +828,19 @@ export const HeartMesh: React.FC<HeartMeshProps> = ({
           </mesh>
         )}
       </group>
+
+      {hoveredPart && (
+        <Html
+          position={[hoveredPart.position[0] + 0.12, hoveredPart.position[1] + 0.12, hoveredPart.position[2]]}
+          style={{ pointerEvents: 'none' }}
+        >
+          <div className="anatomy-tooltip">
+            <span className="anatomy-tooltip-label">ANATOMICAL STRUCTURE</span>
+            <strong>{hoveredPart.name}</strong>
+            <span>{hoveredPart.description}</span>
+          </div>
+        </Html>
+      )}
 
       {/* ================= HEMODYNAMIC FLOW PARTICLES ================= */}
       {viewMode === 'flow' && (

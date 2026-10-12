@@ -253,29 +253,29 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col font-sans pb-16">
+    <div className="research-ui min-h-screen bg-[#f4f5f2] text-slate-800 flex flex-col font-sans pb-16">
       {/* ================= HEADER ================= */}
-      <header className="border-b border-slate-800 bg-[#0d1322]/80 backdrop-blur-md sticky top-0 z-30 px-4 lg:px-8 py-3.5">
+      <header className="research-header border-b border-slate-200 bg-white sticky top-0 z-30 px-4 lg:px-8 py-3.5">
         <div className="max-w-[1680px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-xl bg-gradient-to-tr from-rose-600 to-indigo-600 shadow-md shadow-rose-600/20">
-              <Heart className="w-5 h-5 text-white animate-pulse" />
+            <div className="p-2 rounded-lg bg-slate-100 border border-slate-200">
+              <Heart className="w-5 h-5 text-rose-700" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h1 className="text-lg font-bold text-white tracking-tight">CardioRisk AI</h1>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                  Track A: Multimodal AI
+                <h1 className="text-lg font-semibold text-slate-900 tracking-tight">Cardiovascular Risk Analysis</h1>
+                <span className="research-kicker text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border border-slate-200 text-slate-500">
+                  Research interface
                 </span>
               </div>
-              <p className="text-xs text-slate-400">
-                Coronary Artery Stenosis Prediction & 3D Hemodynamic Risk Mapping (UCI Z-Alizadeh Sani)
+              <p className="text-xs text-slate-500">
+                Coronary artery assessment · Z-Alizadeh Sani dataset
               </p>
             </div>
           </div>
 
           <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs">
+            <div className="flex items-center space-x-1.5 px-3 py-1 rounded border border-slate-200 bg-white text-xs">
               {backendOnline ? (
                 <>
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -293,7 +293,7 @@ export const App: React.FC = () => {
               href="https://archive.ics.uci.edu/dataset/411/extension+of+z+alizadeh+sani+dataset"
               target="_blank"
               rel="noreferrer"
-              className="text-xs text-slate-400 hover:text-blue-400 transition flex items-center space-x-1"
+              className="text-xs text-slate-500 hover:text-blue-700 transition flex items-center space-x-1"
             >
               <Info className="w-3.5 h-3.5" />
               <span>Dataset Info</span>
@@ -318,7 +318,7 @@ export const App: React.FC = () => {
 
       {/* ================= MAIN CONTENT ================= */}
       <main className="flex-1 max-w-[1680px] w-full mx-auto px-4 lg:px-8 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
           {/* Left Column: Interactive Patient Form (5 cols) */}
           <div className="lg:col-span-5 xl:col-span-4 h-full">
             <InputForm
@@ -332,7 +332,7 @@ export const App: React.FC = () => {
           </div>
 
           {/* Right Column: 3D Visualization + Clinical Dashboard (7 cols) */}
-          <div className="lg:col-span-7 xl:col-span-8 space-y-6">
+          <div className="lg:col-span-7 xl:col-span-8 space-y-5">
             {/* 3D Heart Scene */}
             <div className="w-full h-[520px]">
               <Canvas3D
@@ -363,11 +363,11 @@ export const App: React.FC = () => {
       </main>
 
       {/* ================= MANDATORY REGULATORY & SAFETY DISCLAIMER FOOTER ================= */}
-      <footer className="fixed bottom-0 left-0 right-0 z-40 bg-[#070b14]/95 backdrop-blur-md border-t border-slate-800/80 px-4 py-2.5 shadow-2xl">
-        <div className="max-w-[1680px] mx-auto flex items-center justify-center space-x-2.5 text-center text-xs text-slate-400">
-          <ShieldAlert className="w-4 h-4 text-amber-500 shrink-0" />
+      <footer className="research-footer fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 px-4 py-2.5">
+        <div className="max-w-[1680px] mx-auto flex items-center justify-center space-x-2.5 text-center text-xs text-slate-500">
+          <ShieldAlert className="w-4 h-4 text-amber-700 shrink-0" />
           <p className="tracking-wide">
-            <strong className="text-slate-200">Notice:</strong> Predictions and visualizations generated by this system are strictly for educational and decision-support purposes only. They do not replace formal diagnostic imaging or clinical evaluations.
+            <strong className="text-slate-700">Research notice:</strong> Predictions and visualizations are educational decision-support outputs and do not replace diagnostic imaging or clinical evaluation.
           </p>
         </div>
       </footer>
