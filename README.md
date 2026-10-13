@@ -10,11 +10,18 @@
 
 ---
 
-## 1. System Overview & Architecture
+## 📚 Technical Deep-Dive Documentation
 
-**PulsePlex** is an end-to-end clinical decision-support and 3D visual mapping system designed for multi-vessel coronary artery disease (CAD) risk assessment and artery-specific stenosis prediction.
+For an exhaustive, production-grade technical breakdown of each subsystem, consult our dedicated architecture and engineering specifications in the [`docs/`](./docs) directory:
 
-The platform bridges gradient-boosted machine learning, game-engine-grade WebGL rendering, and local game-theoretic feature attributions (SHAP) to transform complex clinical vectors (demographics, vital signs, ECG waveforms, echocardiography, and laboratory biomarkers) into an interpretable, spatial 3D coronary vascular map.
+| Document | Technical Scope & Topics Covered |
+| :--- | :--- |
+| **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** | **System Topology & Runtime Dataflow:** Decoupled FastAPI + React 18 topology, sub-80ms async inference pipeline, Pydantic data contracts, and component lifecycle benchmarks. |
+| **[docs/MACHINE_LEARNING.md](./docs/MACHINE_LEARNING.md)** | **Predictive AI Core & Anti-Leakage Protocol:** UCI Z-Alizadeh Sani cohort ($n=303$), strict purge of post-catheterization variables (`Cath`, `LAD`, `LCX`, `RCA`), 4x tuned XGBoost classifiers, 5-fold cross-validation (84.9% holdout / 91.4% CV ROC-AUC), and exact TreeSHAP game-theoretic mathematics. |
+| **[docs/3D_VISUALIZATION.md](./docs/3D_VISUALIZATION.md)** | **WebGL Biomechanical Graphics:** Three.js / React Three Fiber rendering, procedural Catmull-Rom cubic splines & `TubeGeometry` for coronary trees (LMCA, LAD, LCX, RCA, D1, D2, OM1, AM, PDA), harmonic Wiggers cardiac cycle simulation, multi-spectral CT windowing shaders, and 3D virtual stent meshes. |
+| **[docs/CLINICAL_DECISION_SUPPORT.md](./docs/CLINICAL_DECISION_SUPPORT.md)** | **Cardiovascular Decision Support:** Society of Cardiovascular Computed Tomography (SCCT) CAD-RADS™ 2.0 classification tree, What-If GDMT counterfactual simulator (ARR & NNT), fluid hemodynamic CT-FFR estimation, real-time Lead II ECG waveform morphology sync, and ACC/AHA consultation EHR export. |
+
+---
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────┐
@@ -155,6 +162,11 @@ PulsePlex introduces five clinical decision-support and interventional innovatio
 
 ```
 pulseplex/
+├── docs/                                 # In-depth technical engineering documentation
+│   ├── ARCHITECTURE.md                   # System topology, micro-service dataflow & benchmarks
+│   ├── MACHINE_LEARNING.md               # Anti-leakage protocol, 4x XGBoost, CV & TreeSHAP
+│   ├── 3D_VISUALIZATION.md               # Three.js splines, Wiggers cardiac cycle & 3D stenting
+│   └── CLINICAL_DECISION_SUPPORT.md      # CAD-RADS 2.0, What-If GDMT, CT-FFR & EHR consultation
 ├── backend/
 │   ├── data/
 │   │   ├── z_alizadeh_sani_extended.xlsx # Original UCI/Mendeley dataset
